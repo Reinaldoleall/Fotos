@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Pop-up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Botão de câmera flutuante */
+        #openPopup {
+            padding: 10px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/860/860790.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Pop-up com fundo transparente */
+        .popup {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro semitransparente */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .image-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .image-frame {
+            width: 100px;
+            height: 100px;
+            background-color: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-frame::before {
+            content: '+';
+            font-size: 24px;
+            color: #aaa;
+            display: block;
+        }
+
+        #shareBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #shareBtn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão de pop-up com ícone de câmera -->
+    <button id="openPopup"></button>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <div class="image-grid">
+                <div class="image-frame" id="frame1"></div>
+                <div class="image-frame" id="frame2"></div>
+                <div class="image-frame" id="frame3"></div>
+                <div class="image-frame" id="frame4"></div>
+                <div class="image-frame" id="frame5"></div>
+                <div class="image-frame" id="frame6"></div>
+            </div>
+            <button id="shareBtn">Share on WhatsApp</button>
+        </div>
+    </div>
+
+    <script>
+        const popup = document.getElementById('popup');
+        const openPopupButton = document.getElementById('openPopup');
+        const imageFrames = document.querySelectorAll('.image-frame');
+        const shareButton = document.getElementById('shareBtn');
+
+        let images = [];
+
+        // Alternar abertura e fechamento do pop-up ao clicar no botão de câmera
+        openPopupButton.addEventListener('click', () => {
+            // Verifica o estado atual do pop-up
+            if (popup.style.display === 'flex') {
+                popup.style.display = 'none';  // Se estiver aberto, fecha
+            } else {
+                popup.style.display = 'flex';  // Se estiver fechado, abre
+            }
+        });
+
+        // Clicar no quadro de imagem para abrir a câmera
+        imageFrames.forEach((frame, index) => {
+            frame.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';  // Forçar a abertura da câmera traseira (em dispositivos móveis)
+
+                input.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            frame.style.backgroundImage = `url(${e.target.result})`;
+                            frame.textContent = ''; // Remove o símbolo '+' após adicionar a imagem
+                            images[index] = e.target.result; // Armazenar a imagem
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                input.click(); // Simula o clique para abrir a câmera
+            });
+        });
+
+        // Compartilhar as imagens via WhatsApp usando wa.me
+        shareButton.addEventListener('click', () => {
+            let imageLinks = '';
+            images.forEach((image, index) => {
+                if (image) {
+                    imageLinks += `Image ${index + 1}: ${image}\n`;
+                }
+            });
+
+            if (imageLinks) {
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(imageLinks)}`;
+                window.open(whatsappUrl, '_blank');
+            } else {
+                alert('Please take at least one photo before sharing.');
+            }
+        });
+    </script>
+</body>
+</html>
